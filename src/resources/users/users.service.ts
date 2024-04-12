@@ -13,8 +13,8 @@ export class UsersService {
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) {}
 
-  findUsers(roomId: string) {
-    return this.usersRepository.findBy({ roomId });
+  findUsers(roomId: string, name?: string) {
+    return this.usersRepository.findBy({ roomId, name });
   }
 
   createUser(userParams: CreateUserDto) {
