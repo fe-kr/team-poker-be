@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { typeormConfig } from './configs/typeorm.config';
+import { RoomsModule } from './resources/rooms/rooms.module';
 import { UsersModule } from './resources/users/users.module';
 
 @Module({
@@ -12,6 +13,7 @@ import { UsersModule } from './resources/users/users.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(typeormConfig),
     UsersModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
