@@ -28,11 +28,11 @@ export class UsersController {
   }
 
   @Put(':id')
-  async updateUserById(
+  updateUserById(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    await this.usersService.updateUser(id, updateUserDto);
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')

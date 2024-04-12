@@ -7,6 +7,8 @@ export const typeormConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: process.env.DB_SYNCHRONIZE ? JSON.parse(process.env.TYPEORM_SYNCHRONIZE) : false,
+  synchronize: process.env.DB_SYNCHRONIZE
+    ? JSON.parse(process.env.TYPEORM_SYNCHRONIZE)
+    : false,
   autoLoadEntities: true,
 };
