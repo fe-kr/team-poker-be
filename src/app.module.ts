@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { typeormConfig } from './configs/typeorm.config';
 import { AuthModule } from './resources/auth/auth.module';
 import { RoomsModule } from './resources/rooms/rooms.module';
+import { TopicsModule } from './resources/topics/topics.module';
 import { UsersModule } from './resources/users/users.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { UsersModule } from './resources/users/users.module';
     UsersModule,
     RoomsModule,
     AuthModule,
+    TopicsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

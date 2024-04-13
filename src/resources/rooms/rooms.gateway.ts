@@ -1,6 +1,9 @@
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -15,7 +18,7 @@ import { RoomEventType } from 'src/enums';
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() io: Server;
 
-  async handleConnection(client: Socket) {
+  async handleConnection(@ConnectedSocket() client: Socket) {
     const { roomId, name, type, id } = client.handshake.query;
 
     client.join(roomId);
@@ -29,9 +32,39 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-  async handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     const { roomId, name, type, id } = client.handshake.query;
 
     this.io.to(roomId).emit(RoomEventType.UserLeft, { name, type, id });
+  }
+
+  @SubscribeMessage(RoomEventType.TopicChose)
+  handleTopicChose(
+    @MessageBody() topicId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = client.handshake.query;
+
+    this.io.to(roomId).emit(RoomEventType.TopicChose, topicId);
+  }
+
+  @SubscribeMessage(RoomEventType.VoteSubmitted)
+  handleUserVoted(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    const { roomId, name, id } = client.handshake.query;
+    const { vote, topicId } = data;
+
+    this.io
+      .to(roomId)
+      .emit(RoomEventType.TopicChose, { vote, topicId, name, id });
+  }
+
+  @SubscribeMessage(RoomEventType.VotesRevealed)
+  handleVotesRevealed(
+    @MessageBody() topicId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = client.handshake.query;
+
+    this.io.to(roomId).emit(RoomEventType.VotesRevealed, topicId);
   }
 }
