@@ -1,3 +1,4 @@
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,7 +9,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
 import { RoomEventType } from 'src/enums';
 
 @WebSocketGateway({
@@ -18,24 +18,30 @@ import { RoomEventType } from 'src/enums';
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() io: Server;
 
+  constructor(private jwtService: JwtService) {}
+
   async handleConnection(@ConnectedSocket() client: Socket) {
-    const { roomId, name, type, id } = client.handshake.query;
+    const { roomId, name, type, id } = this.jwtService.decode(
+      <string>client.handshake.query.token,
+    );
 
     client.join(roomId);
-    client.data = { name, type, id };
-    this.io.to(roomId).emit(RoomEventType.UserJoined, { name, type, id });
+    client.data = { roomId, name, type, id };
+
+    client.broadcast.to(roomId).emit(RoomEventType.UserJoined, client.data);
 
     const sockets = await this.io.to(roomId).fetchSockets();
+
     client.emit(
-      RoomEventType.UserJoined,
+      RoomEventType.UsersConnected,
       sockets.map(({ data }) => data),
     );
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    const { roomId, name, type, id } = client.handshake.query;
-
-    this.io.to(roomId).emit(RoomEventType.UserLeft, { name, type, id });
+    client.broadcast
+      .to(client.data.roomId)
+      .emit(RoomEventType.UserLeft, client.data);
   }
 
   @SubscribeMessage(RoomEventType.TopicChose)

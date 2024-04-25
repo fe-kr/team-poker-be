@@ -4,6 +4,7 @@ export enum UserType {
 }
 
 export enum RoomEventType {
+  UsersConnected = 'UsersConnected',
   UserJoined = 'UserJoined',
   UserLeft = 'UserLeft',
 
