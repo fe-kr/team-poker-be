@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
 import { Topic } from 'src/entities/topic.entity';
+import { Repository } from 'typeorm';
 
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
@@ -15,6 +14,10 @@ export class TopicsService {
 
   findTopics(roomId: string) {
     return this.topicsRepository.findBy({ roomId });
+  }
+
+  findTopicById(roomId: string, id: string) {
+    return this.topicsRepository.findOneBy({ roomId, id });
   }
 
   createTopic(topicParams: CreateTopicDto) {

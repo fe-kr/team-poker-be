@@ -9,7 +9,9 @@ export enum RoomEventType {
   UserLeft = 'UserLeft',
 
   TopicChose = 'TopicChose',
+  TopicCreated = 'TopicCreated',
 
   VoteSubmitted = 'VoteSubmitted',
   VotesRevealed = 'VotesRevealed',
+  VotesReset = 'VotesReset',
 }

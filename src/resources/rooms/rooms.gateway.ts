@@ -39,9 +39,19 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    client.broadcast
-      .to(client.data.roomId)
-      .emit(RoomEventType.UserLeft, client.data);
+    const { roomId } = client.data;
+
+    client.broadcast.to(roomId).emit(RoomEventType.UserLeft, client.data);
+  }
+
+  @SubscribeMessage(RoomEventType.TopicCreated)
+  handleTopicCreate(
+    @MessageBody() topicId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = client.data;
+
+    client.broadcast.to(roomId).emit(RoomEventType.TopicCreated, topicId);
   }
 
   @SubscribeMessage(RoomEventType.TopicChose)
@@ -49,19 +59,18 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId } = client.handshake.query;
+    const { roomId } = client.data;
 
-    this.io.to(roomId).emit(RoomEventType.TopicChose, topicId);
+    client.broadcast.to(roomId).emit(RoomEventType.TopicChose, topicId);
   }
 
   @SubscribeMessage(RoomEventType.VoteSubmitted)
   handleUserVoted(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-    const { roomId, name, id } = client.handshake.query;
-    const { vote, topicId } = data;
+    const { roomId, ...user } = client.data;
 
-    this.io
+    client.broadcast
       .to(roomId)
-      .emit(RoomEventType.TopicChose, { vote, topicId, name, id });
+      .emit(RoomEventType.VoteSubmitted, { ...data, user });
   }
 
   @SubscribeMessage(RoomEventType.VotesRevealed)
@@ -69,8 +78,20 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId } = client.handshake.query;
+    const { roomId } = client.data;
 
-    this.io.to(roomId).emit(RoomEventType.VotesRevealed, topicId);
+    this.io
+      .to(roomId)
+      .emit(RoomEventType.VotesRevealed, { topicId, results: {} });
+  }
+
+  @SubscribeMessage(RoomEventType.VotesReset)
+  handleVotesReset(
+    @MessageBody() topicId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = client.data;
+
+    client.broadcast.to(roomId).emit(RoomEventType.VotesReset, topicId);
   }
 }
