@@ -1,4 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+import type { Vote } from './vote.entity';
 
 @Entity()
 export class Topic {
@@ -8,9 +17,17 @@ export class Topic {
   @Column()
   title: string;
 
-  @Column()
+  @ManyToOne('Room', 'topics', {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'roomId' })
   roomId: string;
 
   @Column()
   description: string;
+
+  @OneToMany('Vote', 'topicId')
+  @JoinColumn()
+  votes?: Vote[];
 }

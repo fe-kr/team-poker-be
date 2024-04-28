@@ -11,6 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RoomEventType } from 'src/enums';
 
+import { VotesService } from '../votes/votes.service';
+
 @WebSocketGateway({
   namespace: 'room',
   cors: { origin: '*' },
@@ -18,7 +20,10 @@ import { RoomEventType } from 'src/enums';
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() io: Server;
 
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private votesService: VotesService,
+  ) {}
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     const { roomId, name, type, id } = this.jwtService.decode(
@@ -65,32 +70,38 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(RoomEventType.VoteSubmitted)
-  handleUserVoted(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-    const { roomId, ...user } = client.data;
+  async handleUserVoted(
+    @MessageBody() data: { topicId: string; vote: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, id, name } = client.data;
+    const payload = { ...data, id, userName: name };
 
-    client.broadcast
-      .to(roomId)
-      .emit(RoomEventType.VoteSubmitted, { ...data, user });
+    await this.votesService.createVote(payload);
+
+    client.broadcast.to(roomId).emit(RoomEventType.VoteSubmitted, payload);
   }
 
   @SubscribeMessage(RoomEventType.VotesRevealed)
-  handleVotesRevealed(
+  async handleVotesRevealed(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId } = client.data;
 
-    this.io
-      .to(roomId)
-      .emit(RoomEventType.VotesRevealed, { topicId, results: {} });
+    const results = await this.votesService.calculateVotesResult(topicId);
+
+    this.io.to(roomId).emit(RoomEventType.VotesRevealed, { topicId, results });
   }
 
   @SubscribeMessage(RoomEventType.VotesReset)
-  handleVotesReset(
+  async handleVotesReset(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId } = client.data;
+
+    await this.votesService.deleteVotesByTopicId(topicId);
 
     client.broadcast.to(roomId).emit(RoomEventType.VotesReset, topicId);
   }

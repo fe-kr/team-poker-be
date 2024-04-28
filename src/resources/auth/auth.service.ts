@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
-
 import { UserType } from 'src/enums';
 
 import { SignInDto } from './dto/sign-in.dto';
@@ -38,7 +37,7 @@ export class AuthService {
   async signIn(signInParams: SignInDto): Promise<string> {
     const { password, roomId, userName } = signInParams;
 
-    const room = await this.roomsService.findRoomById(roomId);
+    const room = await this.roomsService.findRoomById(roomId, true);
 
     if (!room) throw new ForbiddenException('Access Denied');
 

@@ -13,11 +13,17 @@ export class TopicsService {
   ) {}
 
   findTopics(roomId: string) {
-    return this.topicsRepository.findBy({ roomId });
+    return this.topicsRepository.find({
+      where: { roomId },
+      relations: { votes: true },
+    });
   }
 
   findTopicById(roomId: string, id: string) {
-    return this.topicsRepository.findOneBy({ roomId, id });
+    return this.topicsRepository.findOne({
+      where: { roomId, id },
+      relations: { votes: true },
+    });
   }
 
   createTopic(topicParams: CreateTopicDto) {

@@ -21,7 +21,7 @@ export class RoomsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getRoomById(@Param('id') id: string) {
+  findRoomById(@Param('id') id: string) {
     return this.roomsService.findRoomById(id);
   }
 

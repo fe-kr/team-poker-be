@@ -9,6 +9,7 @@ import { AuthModule } from './resources/auth/auth.module';
 import { RoomsModule } from './resources/rooms/rooms.module';
 import { TopicsModule } from './resources/topics/topics.module';
 import { UsersModule } from './resources/users/users.module';
+import { VotesModule } from './resources/votes/votes.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from './resources/users/users.module';
     RoomsModule,
     AuthModule,
     TopicsModule,
+    VotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

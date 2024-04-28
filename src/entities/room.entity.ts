@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+import type { Topic } from './topic.entity';
 
 @Entity()
 export class Room {
@@ -7,4 +15,8 @@ export class Room {
 
   @Column()
   password: string;
+
+  @OneToMany('Topic', 'roomId')
+  @JoinColumn()
+  topics?: Topic[];
 }
