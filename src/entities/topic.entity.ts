@@ -27,6 +27,9 @@ export class Topic {
   @Column()
   description: string;
 
+  @Column()
+  estimation?: number;
+
   @OneToMany('Vote', 'topicId')
   @JoinColumn()
   votes?: Vote[];

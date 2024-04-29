@@ -25,6 +25,22 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private votesService: VotesService,
   ) {}
 
+  async fetchSocketsUsersData(roomId: string) {
+    const sockets = await this.io.to(roomId).fetchSockets();
+
+    return sockets.reduce(
+      (acc, { data }) => {
+        if (!acc.ids[data.id]) {
+          acc.usersData.push(data);
+          acc.ids[data.id] = data.id;
+        }
+
+        return acc;
+      },
+      { ids: {}, usersData: [] },
+    );
+  }
+
   async handleConnection(@ConnectedSocket() client: Socket) {
     const { roomId, name, type, id } = this.jwtService.decode(
       <string>client.handshake.query.token,
@@ -35,12 +51,9 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.broadcast.to(roomId).emit(RoomEventType.UserJoined, client.data);
 
-    const sockets = await this.io.to(roomId).fetchSockets();
+    const { usersData } = await this.fetchSocketsUsersData(roomId);
 
-    client.emit(
-      RoomEventType.UsersConnected,
-      sockets.map(({ data }) => data),
-    );
+    client.emit(RoomEventType.UsersConnected, usersData);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {

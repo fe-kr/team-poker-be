@@ -8,9 +8,11 @@ export class CreateTopicDto {
   title: string;
 
   @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
   roomId: string;
 
   @ApiProperty({ nullable: true })
   @IsString()
-  description: string;
+  description?: string;
 }
