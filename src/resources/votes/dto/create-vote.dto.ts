@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class CreateVoteDto {
   @ApiProperty()
   @IsString()
-  id?: string;
+  id: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

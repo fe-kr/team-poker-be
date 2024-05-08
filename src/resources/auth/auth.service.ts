@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
-import { UserType } from 'src/enums';
+import { UserType } from 'src/constants/enum';
 
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -26,7 +26,7 @@ export class AuthService {
     });
 
     const user = await this.usersService.createUser({
-      type: UserType.Admin,
+      type: UserType.ADMIN,
       name: userName,
       roomId: room.id,
     });
@@ -49,9 +49,9 @@ export class AuthService {
 
     if (!user) {
       user = await this.usersService.createUser({
-        type: UserType.User,
+        type: UserType.USER,
         name: userName,
-        roomId,
+        roomId: room.id,
       });
     }
 

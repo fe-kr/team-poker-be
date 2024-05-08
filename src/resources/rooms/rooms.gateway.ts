@@ -9,13 +9,13 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { RoomEventType } from 'src/enums';
+import { RoomEventType } from 'src/constants/enum';
 
 import { VotesService } from '../votes/votes.service';
 
 @WebSocketGateway({
   namespace: 'room',
-  cors: { origin: '*' },
+  cors: { origin: process.env.CLIENT_URL },
 })
 export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() io: Server;
@@ -49,40 +49,40 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.join(roomId);
     client.data = { roomId, name, type, id };
 
-    client.broadcast.to(roomId).emit(RoomEventType.UserJoined, client.data);
+    client.broadcast.to(roomId).emit(RoomEventType.USER_JOINED, client.data);
 
     const { usersData } = await this.fetchSocketsUsersData(roomId);
 
-    client.emit(RoomEventType.UsersConnected, usersData);
+    client.emit(RoomEventType.USERS_CONNECTED, usersData);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     const { roomId } = client.data;
 
-    client.broadcast.to(roomId).emit(RoomEventType.UserLeft, client.data);
+    client.broadcast.to(roomId).emit(RoomEventType.USER_LEFT, client.data);
   }
 
-  @SubscribeMessage(RoomEventType.TopicCreated)
+  @SubscribeMessage(RoomEventType.TOPIC_CREATED)
   handleTopicCreate(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId } = client.data;
 
-    client.broadcast.to(roomId).emit(RoomEventType.TopicCreated, topicId);
+    client.broadcast.to(roomId).emit(RoomEventType.TOPIC_CREATED, topicId);
   }
 
-  @SubscribeMessage(RoomEventType.TopicChose)
+  @SubscribeMessage(RoomEventType.TOPIC_CHOSE)
   handleTopicChose(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId } = client.data;
 
-    client.broadcast.to(roomId).emit(RoomEventType.TopicChose, topicId);
+    client.broadcast.to(roomId).emit(RoomEventType.TOPIC_CHOSE, topicId);
   }
 
-  @SubscribeMessage(RoomEventType.VoteSubmitted)
+  @SubscribeMessage(RoomEventType.VOTE_SUBMITTED)
   async handleUserVoted(
     @MessageBody() data: { topicId: string; vote: number },
     @ConnectedSocket() client: Socket,
@@ -92,10 +92,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.votesService.createVote(payload);
 
-    client.broadcast.to(roomId).emit(RoomEventType.VoteSubmitted, payload);
+    client.broadcast.to(roomId).emit(RoomEventType.VOTE_SUBMITTED, payload);
   }
 
-  @SubscribeMessage(RoomEventType.VotesRevealed)
+  @SubscribeMessage(RoomEventType.VOTES_REVEALED)
   async handleVotesRevealed(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
@@ -104,10 +104,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const results = await this.votesService.calculateVotesResult(topicId);
 
-    this.io.to(roomId).emit(RoomEventType.VotesRevealed, { topicId, results });
+    this.io.to(roomId).emit(RoomEventType.VOTES_REVEALED, { topicId, results });
   }
 
-  @SubscribeMessage(RoomEventType.VotesReset)
+  @SubscribeMessage(RoomEventType.VOTES_RESET)
   async handleVotesReset(
     @MessageBody() topicId: string,
     @ConnectedSocket() client: Socket,
@@ -116,6 +116,6 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.votesService.deleteVotesByTopicId(topicId);
 
-    client.broadcast.to(roomId).emit(RoomEventType.VotesReset, topicId);
+    client.broadcast.to(roomId).emit(RoomEventType.VOTES_RESET, topicId);
   }
 }

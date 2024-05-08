@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-
-import { UserType } from 'src/enums';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { UserType } from 'src/constants/enum';
+import { ValueOf } from 'src/types/common';
 
 export class CreateUserDto {
   @ApiProperty({ required: true })
@@ -10,8 +10,7 @@ export class CreateUserDto {
   name: string;
 
   @ApiProperty({ required: true, enum: UserType })
-  @IsEnum(UserType)
-  type: UserType;
+  type: ValueOf<typeof UserType>;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
